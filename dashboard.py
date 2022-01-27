@@ -43,71 +43,73 @@ pio.templates["dark_red_theme"] = go.layout.Template(
 
 
 # DATA FILE PROCESSING
+try:
+    # Find directory for users download folder
+    path_to_download_folder = str(os.path.join(Path.home(), "Downloads", "NetflixViewingHistory.csv"))
+    print(path_to_download_folder)
+    main_dataframe = pd.read_csv(path_to_download_folder) # Import data from file uploaded
+    df = main_dataframe.copy() # Copy so original is not altered
 
-# Find directory for users download folder
-path_to_download_folder = str(os.path.join(Path.home(), "Downloads", "NetflixViewingHistory.csv"))
-main_dataframe = pd.read_csv(path_to_download_folder) # Import data from file uploaded
-df = main_dataframe.copy() # Copy so original is not altered
+    # Convert dates to datetime type
+    df["Date"] = pd.to_datetime(df["Date"])
 
-# Convert dates to datetime type
-df["Date"] = pd.to_datetime(df["Date"])
+    # Extract data from "Date" column into new columns
+    df["Date"]         = df["Date"].dt.normalize()
+    df["Year"]         = df["Date"].dt.year
+    df["Month_number"] = df["Date"].dt.month
+    df["Month"]        = df["Date"].dt.month_name()
+    df["Day"]          = df["Date"].dt.day
+    df["Day_of_week"]  = df["Date"].dt.day_name()
 
-# Extract data from "Date" column into new columns
-df["Date"]         = df["Date"].dt.normalize()
-df["Year"]         = df["Date"].dt.year
-df["Month_number"] = df["Date"].dt.month
-df["Month"]        = df["Date"].dt.month_name()
-df["Day"]          = df["Date"].dt.day
-df["Day_of_week"]  = df["Date"].dt.day_name()
+    # Split the title data into new columns
+    title_details = df.Title.str.split(":", expand=True, n=2)
+    # Use title data for new column names
+    df["Show_name"] = title_details[0]
+    df["Season"] = title_details[1]
+    df["Episode_name"] = title_details[2]   
+    # Determine whether a record is a show or a movie
+    df["Show_type"] = df.apply(lambda x: "Movie" if pd.isnull(x["Season"]) else "TV Show", axis=1)
 
-# Split the title data into new columns
-title_details = df.Title.str.split(":", expand=True, n=2)
-# Use title data for new column names
-df["Show_name"] = title_details[0]
-df["Season"] = title_details[1]
-df["Episode_name"] = title_details[2]   
-# Determine whether a record is a show or a movie
-df["Show_type"] = df.apply(lambda x: "Movie" if pd.isnull(x["Season"]) else "TV Show", axis=1)
+    # Get the year range from dataset to use in graphs and sliders
+    years = df["Year"].value_counts().index.sort_values()
+    firstYear = years[0]
+    lastYear = years[-1]
+    # Months to display
+    months = ["Jan", "Feb", "Mar", "Apr",
+            "May", "Jun", "Jul", "Aug", 
+            "Sep", "Oct", "Nov", "Dec"]
 
-# Get the year range from dataset to use in graphs and sliders
-years = df["Year"].value_counts().index.sort_values()
-firstYear = years[0]
-lastYear = years[-1]
-# Months to display
-months = ["Jan", "Feb", "Mar", "Apr",
-          "May", "Jun", "Jul", "Aug", 
-          "Sep", "Oct", "Nov", "Dec"]
+    # Reformat dates to only display Year/Month/Day
+    # Fixes issue where timestamp was displayed as 00:00:00
+    df["Date"] = df["Date"].dt.strftime(f"%Y-%m-%d")
 
-# Reformat dates to only display Year/Month/Day
-# Fixes issue where timestamp was displayed as 00:00:00
-df["Date"] = df["Date"].dt.strftime(f"%Y-%m-%d")
+    # Build dataframes for watch history data 
+    watch_data = df[["Date", "Show_name"]].sort_values(by=["Date"], ascending=False)
+    # df Shows
+    df_recent_show = watch_data.loc[df["Show_type"] == "TV Show"]
+    # df Movies
+    df_recent_movie = watch_data.loc[df["Show_type"] == "Movie"]
 
-# Build dataframes for watch history data 
-watch_data = df[["Date", "Show_name"]].sort_values(by=["Date"], ascending=False)
-# df Shows
-df_recent_show = watch_data.loc[df["Show_type"] == "TV Show"]
-# df Movies
-df_recent_movie = watch_data.loc[df["Show_type"] == "Movie"]
+    # Metrics
+    top_show    = df_recent_show["Show_name"].value_counts().head(1).index
+    ntop_show   = df_recent_show["Show_name"].value_counts().head(1)
 
-# Metrics
-top_show    = df_recent_show["Show_name"].value_counts().head(1).index
-ntop_show   = df_recent_show["Show_name"].value_counts().head(1)
+    top_movie  = df_recent_movie["Show_name"].value_counts().head(1).index
+    ntop_movie = df_recent_movie["Show_name"].value_counts().head(1)
 
-top_movie  = df_recent_movie["Show_name"].value_counts().head(1).index
-ntop_movie = df_recent_movie["Show_name"].value_counts().head(1)
+    most_active_day         = df["Day"].value_counts().head(1).index
+    nmost_active_day        = df["Day"].value_counts().head(1).to_list()
 
-most_active_day         = df["Day"].value_counts().head(1).index
-nmost_active_day        = df["Day"].value_counts().head(1).to_list()
+    most_active_dayofweek   = df["Day_of_week"].value_counts().head(1).index
+    nmost_active_dayofweek  = df["Day_of_week"].value_counts().head(1).to_list()
 
-most_active_dayofweek   = df["Day_of_week"].value_counts().head(1).index
-nmost_active_dayofweek  = df["Day_of_week"].value_counts().head(1).to_list()
+    most_active_month       = df["Month"].value_counts().head(1).index
+    nmost_active_month      = df["Month"].value_counts().head(1).to_list()
 
-most_active_month       = df["Month"].value_counts().head(1).index
-nmost_active_month      = df["Month"].value_counts().head(1).to_list()
-
-most_active_year        = df["Year"].value_counts().head(1).index
-nmost_active_year       = df["Year"].value_counts().head(1).to_list()
-
+    most_active_year        = df["Year"].value_counts().head(1).index
+    nmost_active_year       = df["Year"].value_counts().head(1).to_list()
+except:
+    print("No file found")
 
 
 
