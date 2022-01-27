@@ -13,7 +13,7 @@ def flask_app():
         from dashboard import init_dashboard
         app = init_dashboard(app)
 
-        return app
+    return app
     
 app = flask_app()
 
