@@ -1,11 +1,11 @@
 from flask import Flask, request, render_template, redirect, url_for
-from flask import current_app as app
+from flask import current_app
 
-@app.route("/")
+@current_app.route("/")
 def index():
     return "Hello World!"
 
-@app.route("/dashboard")
+@current_app.route("/dashboard")
 def dashboard():
     render_template("dashboard.html")
 
