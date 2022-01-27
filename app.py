@@ -2,20 +2,21 @@
 from flask import Flask
 
 def flask_app():
-    app = Flask(__name__)
+    flaskapp = Flask(__name__)
     #app.config.from_object('config.Config')
 
-    with app.app_context():
+    with flaskapp.app_context():
         # Core flask app pages
         import routes
 
         # Import Dash app
         from dashboard import init_dashboard
-        app = init_dashboard(app)
+        dashboard = init_dashboard(flaskapp)
 
-    return app
+    return flaskapp
     
 app = flask_app()
+print("appdata: ", app)
 
 # Run server
 if __name__ == "__main__":

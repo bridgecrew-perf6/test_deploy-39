@@ -7,7 +7,7 @@ def index():
 
 @current_app.route("/dashboard")
 def dashboard():
-    render_template("dashboard.html")
+    return redirect("/dashboard/")
 
 #if __name__ == "__main__":
 #    app.run()
