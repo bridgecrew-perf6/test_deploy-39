@@ -3,6 +3,7 @@ colorama==0.4.4
 dash==2.0.0
 dash-core-components==2.0.0
 dash-html-components==2.0.0
+dash-bootstrap-components==1.0.9
 dash-table==5.0.0
 dearpygui==0.8.64
 Flask==2.0.2
